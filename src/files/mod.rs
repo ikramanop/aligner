@@ -1,16 +1,24 @@
 use csv::ReaderBuilder;
 use ndarray::Array2;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::path::{Display, Path};
 
 struct FileStruct<'a>(&'a Path, Display<'a>, File);
 
-fn read_file(path: &str) -> FileStruct {
+fn read_file(path: &str, write: bool) -> FileStruct {
     let path = Path::new(path);
     let display = path.display();
 
-    let file = match File::open(&path) {
+    let mut file_options = OpenOptions::new();
+    file_options.write(write).read(!write).truncate(write);
+
+    if !Path::new(path).exists() && write {
+        file_options.create_new(true);
+    }
+
+    let file = match file_options.open(&path) {
         Err(why) => panic!("couldn't open {}: {}", display, why),
         Ok(file) => file,
     };
@@ -18,8 +26,17 @@ fn read_file(path: &str) -> FileStruct {
     FileStruct(path, display, file)
 }
 
+pub fn write_to_file(path: &str, contents: &str) {
+    let FileStruct(_, display, mut file) = read_file(path, true);
+
+    match file.write_all(contents.as_bytes()) {
+        Err(why) => panic!("error writing to {}: {}", display, why),
+        _ => {}
+    }
+}
+
 pub fn load_file_contents(path: &str) -> String {
-    let FileStruct(_, display, mut file) = read_file(path);
+    let FileStruct(_, display, mut file) = read_file(path, false);
 
     let mut contents = String::new();
     match file.read_to_string(&mut contents) {
@@ -42,7 +59,7 @@ pub fn load_pam250() -> Array2<i32> {
     for (i, record) in reader.records().enumerate() {
         let matrix_row = match record {
             Ok(row) => row,
-            Err(_) => panic!("Error reading PAM250 matrix"),
+            Err(_) => panic!("error reading PAM250 matrix"),
         };
         for (j, elem) in matrix_row.iter().enumerate() {
             result_matrix[[i, j]] = elem.parse::<i32>().unwrap();
@@ -64,7 +81,7 @@ pub fn load_blosum50() -> Array2<i32> {
     for (i, record) in reader.records().enumerate() {
         let matrix_row = match record {
             Ok(row) => row,
-            Err(_) => panic!("Error reading BLOSUM50 matrix"),
+            Err(_) => panic!("error reading BLOSUM50 matrix"),
         };
         for (j, elem) in matrix_row.iter().enumerate() {
             result_matrix[[i, j]] = elem.parse::<i32>().unwrap();

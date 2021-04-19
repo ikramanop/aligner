@@ -7,8 +7,8 @@ use std::str::from_utf8;
 pub struct AlignResult {
     alignment_matrix: Array2<i32>,
     direction_matrix: Array2<Direction>,
-    max_f: i32,
-    optimal_alignment: String,
+    pub max_f: i32,
+    pub optimal_alignment: (Vec<Protein>, Vec<Protein>),
 }
 
 #[derive(Debug, Clone)]
@@ -44,6 +44,10 @@ impl Aligner for SimpleAligner {
             |_| Direction::Beginning,
         );
 
+        let mut max_f: i32 = 0;
+        let mut max_x: usize = 0;
+        let mut max_y: usize = 0;
+
         for (x, elem_1) in self.protein_sequence_1.iter().enumerate() {
             for (y, elem_2) in self.protein_sequence_2.iter().enumerate() {
                 let x_real = x + 1;
@@ -58,6 +62,7 @@ impl Aligner for SimpleAligner {
                     alignment_matrix[[y_real - 1, x_real - 1]] + matrix[[seq_2_pos, seq_1_pos]];
 
                 let max = max(max(max(up, left), diagonal), 0);
+
                 alignment_matrix[[y_real, x_real]] = max;
 
                 if max == 0 {
@@ -69,14 +74,51 @@ impl Aligner for SimpleAligner {
                 } else if max == diagonal {
                     direction_matrix[[y_real, x_real]] = Direction::Diagonal
                 }
+
+                if max >= max_f {
+                    max_f = max;
+                    max_x = x;
+                    max_y = y;
+                }
             }
         }
+
+        let mut current_x = max_x;
+        let mut current_y = max_y;
+        let (mut optimal_alignment_1, mut optimal_alignment_2) = (
+            vec![self.protein_sequence_1[max_x]],
+            vec![self.protein_sequence_2[max_y]],
+        );
+        loop {
+            match direction_matrix[[current_y, current_x]] {
+                Direction::Beginning => break,
+                Direction::Up => {
+                    optimal_alignment_1.push(Protein::Blank);
+                    optimal_alignment_2.push(self.protein_sequence_2[current_y - 1]);
+                    current_y -= 1;
+                }
+                Direction::Left => {
+                    optimal_alignment_1.push(self.protein_sequence_1[current_x - 1]);
+                    optimal_alignment_2.push(Protein::Blank);
+                    current_x -= 1;
+                }
+                Direction::Diagonal => {
+                    optimal_alignment_1.push(self.protein_sequence_1[current_x - 1]);
+                    optimal_alignment_2.push(self.protein_sequence_2[current_y - 1]);
+                    current_x -= 1;
+                    current_y -= 1;
+                }
+            }
+        }
+
+        optimal_alignment_1.reverse();
+        optimal_alignment_2.reverse();
 
         AlignResult {
             alignment_matrix: alignment_matrix,
             direction_matrix: direction_matrix,
-            max_f: 10,
-            optimal_alignment: String::from("ABABA"),
+            max_f: max_f,
+            optimal_alignment: (optimal_alignment_1, optimal_alignment_2),
         }
     }
 

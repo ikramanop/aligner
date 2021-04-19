@@ -2,10 +2,11 @@ pub mod align;
 pub mod files;
 
 use crate::align::aligner::*;
+use crate::align::enums::Protein;
 use crate::files::*;
 use clap::{load_yaml, App};
 use seq_io::fasta::Reader;
-use std::str::FromStr;
+use std::str::{from_utf8, FromStr};
 
 fn main() {
     let config = load_yaml!("../config/opts_config.yml");
@@ -49,6 +50,22 @@ fn main() {
 
         let result = _aligner.local_alignment(&deletions, &matrix);
 
-        println!("{:?}", result);
+        println!("{:?}", result.optimal_alignment);
+
+        if let Some(output_path) = matches.value_of("output") {
+            let (alignment_1_u8, alignment_2_u8) = (
+                Protein::protein_vec_to_u8_vec(&result.optimal_alignment.0),
+                Protein::protein_vec_to_u8_vec(&result.optimal_alignment.1),
+            );
+
+            let (alignment_1, alignment_2) = (
+                from_utf8(&alignment_1_u8).unwrap(),
+                from_utf8(&alignment_2_u8).unwrap(),
+            );
+
+            let output = format!("{}\n{}", alignment_1, alignment_2);
+
+            write_to_file(output_path, &output);
+        }
     }
 }

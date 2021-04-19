@@ -43,11 +43,12 @@ pub enum Protein {
     Z = 22,
     X = 23,
     Any = 24,
+    Blank,
 }
 
 impl Protein {
     pub fn match_with_u8(symbol: u8) -> Protein {
-        let result = match symbol {
+        match symbol {
             65 => Protein::A,
             82 => Protein::R,
             78 => Protein::N,
@@ -74,9 +75,38 @@ impl Protein {
             88 => Protein::X,
             42 => Protein::Any,
             s => panic!("No such protein {:?}", str::from_utf8(&[s])),
-        };
+        }
+    }
 
-        result
+    pub fn convert_to_u8(protein: Protein) -> u8 {
+        match protein {
+            Protein::A => 65,
+            Protein::R => 82,
+            Protein::N => 78,
+            Protein::D => 68,
+            Protein::C => 67,
+            Protein::Q => 81,
+            Protein::E => 69,
+            Protein::G => 71,
+            Protein::H => 72,
+            Protein::I => 73,
+            Protein::L => 76,
+            Protein::K => 75,
+            Protein::M => 77,
+            Protein::F => 70,
+            Protein::P => 80,
+            Protein::S => 83,
+            Protein::T => 84,
+            Protein::W => 87,
+            Protein::Y => 89,
+            Protein::V => 86,
+            Protein::B => 66,
+            Protein::J => 74,
+            Protein::Z => 90,
+            Protein::X => 88,
+            Protein::Any => 42,
+            Protein::Blank => 95,
+        }
     }
 
     pub fn u8_vec_to_protein_vec(sequence: &[u8]) -> Vec<Protein> {
@@ -84,6 +114,16 @@ impl Protein {
 
         for elem in sequence.iter() {
             result.push(Protein::match_with_u8(*elem));
+        }
+
+        result
+    }
+
+    pub fn protein_vec_to_u8_vec(sequence: &[Protein]) -> Vec<u8> {
+        let mut result = Vec::<u8>::new();
+
+        for elem in sequence.iter() {
+            result.push(Protein::convert_to_u8(*elem));
         }
 
         result
