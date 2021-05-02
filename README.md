@@ -10,4 +10,6 @@ Currently supplied in cli only.
 
 Use `make build-cli-docker` for building docker image with aligner-cli.
 
+Use `docker run -v $(pwd):/data aligner-cli:$branch $args` to run tool after building.
+
 Use `--help` option after build to see how to work with the tool.

@@ -4,6 +4,7 @@ use crate::align::enums::Protein;
 use crate::files::*;
 use ndarray::array;
 use seq_io::fasta::Reader;
+use std::path::Path;
 
 #[test]
 fn test_global_alignment() {
@@ -66,7 +67,7 @@ fn test_global_alignment() {
         ),
     });
 
-    let contents = load_file_contents("./examples/book_example_1.fasta");
+    let contents = load_file_contents(Path::new("examples/book_example_1.fasta"));
     let bytes = contents.as_bytes();
 
     let mut reader = Reader::new(&bytes[..]);
@@ -158,7 +159,7 @@ fn test_local_alignment() {
         ),
     });
 
-    let contents = load_file_contents("./examples/book_example_1.fasta");
+    let contents = load_file_contents(Path::new("examples/book_example_1.fasta"));
     let bytes = contents.as_bytes();
 
     let mut reader = Reader::new(&bytes[..]);

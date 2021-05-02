@@ -3,6 +3,8 @@ use aligner::align::enums::Protein;
 use aligner::files::*;
 use clap::{load_yaml, App};
 use seq_io::fasta::Reader;
+use std::env;
+use std::path::Path;
 use std::str::{from_utf8, FromStr};
 
 fn main() {
@@ -29,7 +31,14 @@ fn main() {
     }
 
     if let Some(input) = matches.value_of("INPUT") {
-        let contents = load_file_contents(input);
+        let base_dir = match env::var("BASE_SEQS_PATH") {
+            Ok(var) => var,
+            Err(_) => String::from_str("").unwrap(),
+        };
+
+        let path = Path::new(&base_dir).join(input);
+
+        let contents = load_file_contents(path.as_path());
         let bytes = contents.as_bytes();
 
         let mut reader = Reader::new(&bytes[..]);
@@ -68,7 +77,7 @@ fn main() {
 
             let output = format!("{}\n{}", alignment_1, alignment_2);
 
-            write_to_file(output_path, &output);
+            write_to_file(Path::new(output_path), &output);
         }
     }
 }
