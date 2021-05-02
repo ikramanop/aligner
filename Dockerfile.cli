@@ -1,0 +1,21 @@
+FROM rust:alpine as builder
+
+RUN apk add --no-cache musl-dev
+
+WORKDIR /app
+
+COPY . /app
+
+RUN cargo build --bin aligner_cli --release
+
+
+FROM alpine:latest as runner
+
+RUN mkdir static
+
+COPY --from=builder /app/static /static
+COPY --from=builder /app/target/release .
+
+ENV BASE_SEQS_PATH=data
+
+ENTRYPOINT ["./aligner_cli"]

@@ -7,8 +7,7 @@ use std::path::{Display, Path};
 
 struct FileStruct<'a>(&'a Path, Display<'a>, File);
 
-fn read_file(path: &str, write: bool) -> FileStruct {
-    let path = Path::new(path);
+fn read_file(path: &Path, write: bool) -> FileStruct {
     let display = path.display();
 
     let mut file_options = OpenOptions::new();
@@ -26,7 +25,7 @@ fn read_file(path: &str, write: bool) -> FileStruct {
     FileStruct(path, display, file)
 }
 
-pub fn write_to_file(path: &str, contents: &str) {
+pub fn write_to_file(path: &Path, contents: &str) {
     let FileStruct(_, display, mut file) = read_file(path, true);
 
     match file.write_all(contents.as_bytes()) {
@@ -35,7 +34,7 @@ pub fn write_to_file(path: &str, contents: &str) {
     }
 }
 
-pub fn load_file_contents(path: &str) -> String {
+pub fn load_file_contents(path: &Path) -> String {
     let FileStruct(_, display, mut file) = read_file(path, false);
 
     let mut contents = String::new();
@@ -48,7 +47,7 @@ pub fn load_file_contents(path: &str) -> String {
 }
 
 pub fn load_pam250() -> Array2<i32> {
-    let raw_data = load_file_contents("static/PAM250.csv");
+    let raw_data = load_file_contents(Path::new("static/PAM250.csv"));
 
     let mut reader = ReaderBuilder::new()
         .delimiter(b' ')
@@ -70,7 +69,7 @@ pub fn load_pam250() -> Array2<i32> {
 }
 
 pub fn load_blosum50() -> Array2<i32> {
-    let raw_data = load_file_contents("static/BLOSUM50.csv");
+    let raw_data = load_file_contents(Path::new("static/BLOSUM50.csv"));
 
     let mut reader = ReaderBuilder::new()
         .delimiter(b' ')

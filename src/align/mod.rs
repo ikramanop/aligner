@@ -1,2 +1,2 @@
+pub mod aligner_core;
 pub mod enums;
-pub mod aligner;
