@@ -1,11 +1,19 @@
+use std::cmp::PartialEq;
+use std::fmt::Debug;
 use std::str;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Direction {
-    Up,
+    Top,
     Left,
     Diagonal,
     Beginning,
+}
+
+impl PartialEq for Direction {
+    fn eq(&self, other: &Self) -> bool {
+        *self as usize == *other as usize
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -14,6 +22,12 @@ pub enum Nucleotide {
     G = 71,
     C = 67,
     T = 84,
+}
+
+impl PartialEq for Nucleotide {
+    fn eq(&self, other: &Self) -> bool {
+        *self as usize == *other as usize
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -44,6 +58,12 @@ pub enum Protein {
     X = 23,
     Any = 24,
     Blank,
+}
+
+impl PartialEq for Protein {
+    fn eq(&self, other: &Self) -> bool {
+        *self as usize == *other as usize
+    }
 }
 
 impl Protein {

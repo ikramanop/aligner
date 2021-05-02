@@ -1,15 +1,12 @@
-pub mod align;
-pub mod files;
-
-use crate::align::aligner::*;
-use crate::align::enums::Protein;
-use crate::files::*;
+use aligner::align::aligner_core::*;
+use aligner::align::enums::Protein;
+use aligner::files::*;
 use clap::{load_yaml, App};
 use seq_io::fasta::Reader;
 use std::str::{from_utf8, FromStr};
 
 fn main() {
-    let config = load_yaml!("../config/opts_config.yml");
+    let config = load_yaml!("../../config/opts_config.yml");
     let matches = App::from(config).get_matches();
 
     let matrix: ndarray::Array2<i32>;
@@ -48,14 +45,20 @@ fn main() {
 
         let mut _aligner: SimpleAligner = SimpleAligner::from_seqs(&seqs[0].seq, &seqs[1].seq);
 
-        let result = _aligner.local_alignment(&deletions, &matrix);
+        let alignment: Box<dyn AlignmentResult>;
 
-        println!("{:?}", result.optimal_alignment);
+        if matches.is_present("global") {
+            alignment = _aligner.global_alignment(&deletions, &matrix);
+        } else {
+            alignment = _aligner.local_alignment(&deletions, &matrix);
+        }
+
+        alignment.represent();
 
         if let Some(output_path) = matches.value_of("output") {
             let (alignment_1_u8, alignment_2_u8) = (
-                Protein::protein_vec_to_u8_vec(&result.optimal_alignment.0),
-                Protein::protein_vec_to_u8_vec(&result.optimal_alignment.1),
+                Protein::protein_vec_to_u8_vec(alignment.get_optimal_alignment().0),
+                Protein::protein_vec_to_u8_vec(alignment.get_optimal_alignment().1),
             );
 
             let (alignment_1, alignment_2) = (

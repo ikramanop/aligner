@@ -3,10 +3,6 @@ version: "0.1"
 author: Lev M. <asertolpas@gmail.com>
 about: Utility to align two sequences
 args:
-        - hello-world:
-                  about: Prints "Hello, world!"
-                  short: h
-                  long: hello-world
         - INPUT:
                   about: Sets the input file to use
                   required: true
@@ -29,3 +25,7 @@ args:
                   long: output
                   takes_value: true
                   value_name: OUTPUT_FILE
+        - global:
+                  about: Use global instead of local alignment
+                  short: g
+                  long: global
