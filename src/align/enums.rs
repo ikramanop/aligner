@@ -30,7 +30,7 @@ impl PartialEq for Nucleotide {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, Hash)]
 pub enum Protein {
     A = 0,
     R = 1,

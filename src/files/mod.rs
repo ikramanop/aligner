@@ -1,5 +1,6 @@
 use csv::ReaderBuilder;
 use ndarray::Array2;
+use ndarray::Axis;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
@@ -46,46 +47,77 @@ pub fn load_file_contents(path: &Path) -> String {
     contents
 }
 
-pub fn load_pam250() -> Array2<i32> {
-    let raw_data = load_file_contents(Path::new("static/PAM250.csv"));
-
+pub fn convert_csv_to_matrix(csv_matrix: &[u8], dim: (usize, usize)) -> Array2<f64> {
     let mut reader = ReaderBuilder::new()
         .delimiter(b' ')
         .has_headers(false)
-        .from_reader(raw_data.as_bytes());
+        .from_reader(csv_matrix);
 
-    let mut result_matrix = Array2::<i32>::zeros((25, 25));
+    let mut result_matrix = Array2::<f64>::zeros(dim);
     for (i, record) in reader.records().enumerate() {
         let matrix_row = match record {
             Ok(row) => row,
-            Err(_) => panic!("error reading PAM250 matrix"),
+            Err(_) => panic!("error reading matrix"),
         };
         for (j, elem) in matrix_row.iter().enumerate() {
-            result_matrix[[i, j]] = elem.parse::<i32>().unwrap();
+            result_matrix[[i, j]] = elem.parse::<f64>().unwrap();
         }
     }
 
     result_matrix
 }
 
-pub fn load_blosum50() -> Array2<i32> {
-    let raw_data = load_file_contents(Path::new("static/BLOSUM50.csv"));
+pub fn convert_matrix_to_csv(matrix: &Array2<f64>) -> Vec<u8> {
+    let mut result: String = String::from("");
 
-    let mut reader = ReaderBuilder::new()
-        .delimiter(b' ')
-        .has_headers(false)
-        .from_reader(raw_data.as_bytes());
+    for (i, elem) in matrix.iter().enumerate() {
+        result += &format!("{}", elem);
 
-    let mut result_matrix = Array2::<i32>::zeros((25, 25));
-    for (i, record) in reader.records().enumerate() {
-        let matrix_row = match record {
-            Ok(row) => row,
-            Err(_) => panic!("error reading BLOSUM50 matrix"),
-        };
-        for (j, elem) in matrix_row.iter().enumerate() {
-            result_matrix[[i, j]] = elem.parse::<i32>().unwrap();
+        if (i + 1) % matrix.len_of(Axis(1)) == 0 {
+            result += "\n";
+        } else {
+            result += " ";
         }
     }
 
-    result_matrix
+    result.as_bytes().to_vec()
+}
+
+pub fn get_db(path: &str) -> Result<sled::Db, &'static str> {
+    let tree = match sled::open(path) {
+        Ok(tree) => tree,
+        Err(_) => return Err("Something wrong happend with db"),
+    };
+
+    match tree.get("BLOSUM50") {
+        Ok(None) => {
+            let raw_data = load_file_contents(Path::new("static/BLOSUM50.csv"));
+
+            match tree.insert("BLOSUM50", raw_data.as_bytes()) {
+                Ok(_) => {}
+                Err(err) => {
+                    panic!("{}", err)
+                }
+            };
+        }
+        Err(_) => return Err("Something wrong happend with db"),
+        _ => {}
+    };
+
+    match tree.get("PAM250") {
+        Ok(None) => {
+            let raw_data = load_file_contents(Path::new("static/PAM250.csv"));
+
+            match tree.insert("PAM250", raw_data.as_bytes()) {
+                Ok(_) => {}
+                Err(err) => {
+                    panic!("{}", err)
+                }
+            };
+        }
+        Err(_) => return Err("Something wrong happend with db"),
+        _ => {}
+    };
+
+    Ok(tree)
 }

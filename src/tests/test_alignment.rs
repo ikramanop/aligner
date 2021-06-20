@@ -1,6 +1,8 @@
-use crate::align::aligner_core::*;
+use crate::align::align_result::GlobalAlignmentResult;
+use crate::align::aligner_core::Aligner;
 use crate::align::enums::Direction::{Beginning, Diagonal, Left, Top};
 use crate::align::enums::Protein;
+use crate::align::simple_aligner::SimpleAligner;
 use crate::files::*;
 use ndarray::array;
 use seq_io::fasta::Reader;
@@ -78,7 +80,7 @@ fn test_global_alignment() {
     };
 
     let alignment =
-        SimpleAligner::from_seqs(&seqs[0].seq, &seqs[1].seq).global_alignment(&8, &matrix);
+        SimpleAligner::from_seqs(&seqs[0].seq, &seqs[1].seq).global_alignment(&8f64, &matrix);
 
     assert_eq!(
         alignment.get_alignment_matrix(),
@@ -170,7 +172,7 @@ fn test_local_alignment() {
     };
 
     let alignment =
-        SimpleAligner::from_seqs(&seqs[0].seq, &seqs[1].seq).local_alignment(&8, &matrix);
+        SimpleAligner::from_seqs(&seqs[0].seq, &seqs[1].seq).local_alignment(&8f64, &matrix);
 
     assert_eq!(
         alignment.get_alignment_matrix(),

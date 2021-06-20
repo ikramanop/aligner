@@ -1,5 +1,6 @@
-use aligner::align::aligner_core::*;
+use aligner::align::aligner_core::{Aligner, AlignmentResult};
 use aligner::align::enums::Protein;
+use aligner::align::simple_aligner::*;
 use aligner::files::*;
 use clap::{load_yaml, App};
 use seq_io::fasta::Reader;
@@ -11,23 +12,49 @@ fn main() {
     let config = load_yaml!("../../config/opts_config.yml");
     let matches = App::from(config).get_matches();
 
-    let matrix: ndarray::Array2<i32>;
-    let deletions: i32;
+    let matrix: ndarray::Array2<f64>;
+    let deletions: f64;
+
+    let db = match get_db(&"database/matrices") {
+        Ok(db) => db,
+        Err(err) => panic!("{}", err),
+    };
 
     if let Some(matrix_option) = matches.value_of("matrix") {
         match matrix_option {
-            "PAM250" => matrix = load_pam250(),
-            "BLOSUM50" => matrix = load_blosum50(),
+            "PAM250" => {
+                matrix = match db.get("PAM250") {
+                    Ok(matrix) => convert_csv_to_matrix(&matrix.unwrap().to_vec(), (25, 25)),
+                    _ => {
+                        panic!()
+                    }
+                }
+            }
+            "BLOSUM50" => {
+                matrix = match db.get("BLOSUM50") {
+                    Ok(matrix) => convert_csv_to_matrix(&matrix.unwrap().to_vec(), (25, 25)),
+                    _ => {
+                        panic!()
+                    }
+                }
+            }
             _ => panic!("No such matrix {}", matrix_option),
         }
     } else {
         panic!()
     }
 
+    match db.flush() {
+        Ok(_) => {}
+        Err(err) => {
+            panic!("{}", err)
+        }
+    };
+
     if let Some(deletions_option) = matches.value_of("deletions") {
         deletions = FromStr::from_str(deletions_option).unwrap()
     } else {
-        deletions = 8
+        deletions = 8f64
     }
 
     if let Some(input) = matches.value_of("INPUT") {
@@ -52,14 +79,14 @@ fn main() {
             panic!("There's should be 2 sequences, not {}", seqs.len())
         }
 
-        let mut _aligner: SimpleAligner = SimpleAligner::from_seqs(&seqs[0].seq, &seqs[1].seq);
+        let mut aligner: SimpleAligner = SimpleAligner::from_seqs(&seqs[0].seq, &seqs[1].seq);
 
         let alignment: Box<dyn AlignmentResult>;
 
         if matches.is_present("global") {
-            alignment = _aligner.global_alignment(&deletions, &matrix);
+            alignment = aligner.global_alignment(&deletions, &matrix);
         } else {
-            alignment = _aligner.local_alignment(&deletions, &matrix);
+            alignment = aligner.local_alignment(&deletions, &matrix);
         }
 
         alignment.represent();
