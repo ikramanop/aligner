@@ -2,9 +2,9 @@
 
 #### Developer: Lev Marder
 
-#### NRNU MEPhI, Spring 2021
+#### NRNU MEPhI, Spring-Summer 2021
 
-Currently supplied in cli only.
+Supplied in form of cli-application and web-service (dispatcher + nodes)
 
 ### Building
 

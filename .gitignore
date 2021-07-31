@@ -1,5 +1,7 @@
 /target
 /out
 **/dev.rs
+**/dev_2.rs
 .vscode
 database
+.VSCodeCounter

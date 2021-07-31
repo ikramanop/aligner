@@ -4,3 +4,4 @@ Makefile
 **/dev.rs
 .vscode
 database
+.VSCodeCounter

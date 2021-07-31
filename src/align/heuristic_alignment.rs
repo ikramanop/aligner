@@ -44,19 +44,20 @@ impl HeuristicPairwiseAlignmentTool {
         }
     }
 
-    pub fn local_alignment(
+    pub fn local_alignment<'a>(
         &mut self,
-        del: &f64,
+        del: f64,
+        kd_value: f64,
+        mut r_squared_value: f64,
         matrix: &Array2<f64>,
         frequences: &Array1<f64>,
     ) -> (f64, Array2<f64>) {
-        let mut transformed_matrix = transform_matrix(
-            &matrix,
-            &0.3,
-            &((&matrix.len_of(Axis(0)) * &matrix.len_of(Axis(1))) as f64),
-            &frequences,
-        )
-        .unwrap();
+        if r_squared_value == 0 as f64 {
+            r_squared_value = (&matrix.len_of(Axis(0)) * &matrix.len_of(Axis(1))) as f64;
+        }
+
+        let mut transformed_matrix =
+            transform_matrix(&matrix, &kd_value, &r_squared_value, &frequences).unwrap();
 
         let mut max_f = 0f64;
         let mut frequency_matrix: Array2<f64>;
@@ -65,7 +66,7 @@ impl HeuristicPairwiseAlignmentTool {
             let result = HeuristicPairwiseAlignmentTool::local_alignment_step(
                 &self.sequences_pair.0,
                 &self.sequences_pair.1,
-                del,
+                &del,
                 &transformed_matrix,
             );
 
@@ -75,13 +76,9 @@ impl HeuristicPairwiseAlignmentTool {
 
             if result.max_f > max_f {
                 max_f = result.max_f;
-                transformed_matrix = transform_matrix(
-                    &frequency_matrix,
-                    &0.3,
-                    &((&matrix.len_of(Axis(0)) * &matrix.len_of(Axis(1))) as f64),
-                    &frequences,
-                )
-                .unwrap();
+                transformed_matrix =
+                    transform_matrix(&frequency_matrix, &kd_value, &r_squared_value, &frequences)
+                        .unwrap();
             } else {
                 break;
             }
@@ -89,13 +86,7 @@ impl HeuristicPairwiseAlignmentTool {
 
         (
             max_f,
-            transform_matrix(
-                &frequency_matrix,
-                &0.3,
-                &((&matrix.len_of(Axis(0)) * &matrix.len_of(Axis(1))) as f64),
-                &frequences,
-            )
-            .unwrap(),
+            transform_matrix(&frequency_matrix, &kd_value, &r_squared_value, &frequences).unwrap(),
         )
     }
 

@@ -7,12 +7,14 @@ use ndarray_rand::RandomExt;
 use ndarray_stats::DeviationExt;
 use roots::{find_roots_quadratic, Roots};
 
-pub fn get_population(
-    amount: &i32,
-    dim: (usize, usize),
-    threshold: &i32,
-    db: &sled::Db,
-) -> Vec<Array2<f64>> {
+fn get_threshold(dim_1: usize) -> f64 {
+    match dim_1 {
+        20 => 22.6,
+        _ => 0 as f64,
+    }
+}
+
+pub fn get_population(amount: &i32, dim: (usize, usize), db: &sled::Db) -> Vec<Array2<f64>> {
     let mut matrices: Vec<Array2<f64>> = Vec::<Array2<f64>>::new();
 
     let mut count = 0;
@@ -24,13 +26,15 @@ pub fn get_population(
         count += 1;
     }
 
+    let threshold = get_threshold(dim.0);
+
     while count < *amount {
         let matrix = Array2::random(dim, Uniform::new_inclusive(-1, 1)).mapv(|a| a as f64);
 
         let mut check = true;
         for item in matrices.iter() {
             let distance = item.l2_dist(&matrix).unwrap();
-            if distance < *threshold as f64 {
+            if distance < threshold {
                 check = false;
                 break;
             }

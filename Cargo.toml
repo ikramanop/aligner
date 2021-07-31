@@ -1,19 +1,28 @@
 [package]
 name = "aligner"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["l.marder"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 clap = {version = "3.0.0-beta.2", features = ["yaml"]}
 seq_io = "0.3.1"
-ndarray = "0.15.1"
-futures = "0.3.14"
+ndarray = {version = "0.15.3", features = ["serde"]}
+futures = "0.3.16"
 csv = "1.1.6"
 num-traits = "0.2.14"
 ndarray-rand = "0.14.0"
 ndarray-stats = "0.5.0"
-roots = "0.0.6"
+roots = "0.0.7"
 sled = "0.34.6"
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1.7"
+warp = "0.3"
+serde = { version = "1.0.126", features = ["derive"] }
+serde_json = "1.0.64"
+pretty_env_logger = "0.4.0"
+log = "0.4.14"
+scopeguard = "1.1.0"
+uuid = { version = "0.8.2", features = ["v4", "serde"] }
+dotenv = "0.15.0"
+rdkafka = { version = "0.26.0", features = ["dynamic-linking"] }
