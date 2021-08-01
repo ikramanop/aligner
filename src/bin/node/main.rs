@@ -1,35 +1,17 @@
-use aligner::align::enums::Protein;
 use aligner::align::heuristic_alignment::HeuristicPairwiseAlignmentTool;
+use aligner::{
+    align::enums::Protein,
+    web::models::{AlignJob, AlignJobResult},
+};
 use dotenv;
-use ndarray::{Array1, Array2};
 use rdkafka::{consumer::CommitMode, message::Message, producer::FutureRecord};
 use rdkafka::{
     consumer::{Consumer, StreamConsumer},
     producer::FutureProducer,
     ClientConfig,
 };
-use serde::{Deserialize, Serialize};
 use serde_json::from_slice;
 use std::{env, time::Duration};
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-struct AlignJob {
-    sequence_1: Vec<u8>,
-    sequence_2: Vec<u8>,
-    matrix: Option<Array2<f64>>,
-    frequences: Array1<f64>,
-    kd_value: f64,
-    r_squared_value: f64,
-    del_value: f64,
-    matrices_volume_value: i32,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-struct AlignJobResult {
-    matrix: Array2<f64>,
-    max_f: f64,
-    matrices_volume_value: i32,
-}
 
 fn load_config<'a>(path: &'a str) {
     println!("{:?}", path);
@@ -103,6 +85,7 @@ async fn main() {
                                     matrix: optimal,
                                     max_f: current_f,
                                     matrices_volume_value: job.matrices_volume_value,
+                                    uuid: job.uuid,
                                 })
                                 .unwrap(),
                             ),

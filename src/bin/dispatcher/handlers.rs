@@ -1,21 +1,25 @@
-use crate::models::{
+use aligner::web::models::{
     AlignJob, AlignJobRequest, AlignJobResult, AlignmentResultEventResponse,
-    EmptySuccessfulResponse, ErroneousResponse, HealthCheck, ProgressEventResponse,
+    EmptySuccessfulResponse, ErroneousResponse, HealthCheck, HealthCheckUnit,
+    ProgressEventResponse,
 };
 use aligner::{files::get_db, matrices::get_population};
 use futures::{Stream, StreamExt};
 use ndarray::{arr1, arr2, Array2};
 use rdkafka::{
+    client::Client,
     consumer::{BaseConsumer, CommitMode, Consumer},
+    groups::GroupList,
     message::Message,
     producer::{BaseProducer, BaseRecord},
-    ClientConfig,
+    types::RDKafkaType,
+    ClientConfig, ClientContext,
 };
 use scopeguard::defer;
 use seq_io::fasta::Reader;
+use std::convert::Infallible;
 use std::env;
 use std::{collections::HashMap, thread};
-use std::{convert::Infallible, str::FromStr};
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use uuid::Uuid;
@@ -24,11 +28,49 @@ use warp::{
     sse::{reply, Event},
 };
 
+#[derive(Clone, Default)]
+pub struct DefaultClientContext;
+impl ClientContext for DefaultClientContext {}
+
 // GET health/check handler
 pub async fn check_health() -> Result<impl warp::Reply, Infallible> {
-    let status = HealthCheck { status: true };
+    let mut nodes = Vec::<HealthCheckUnit>::new();
 
-    Ok(warp::reply::json(&status))
+    let mut config = ClientConfig::new();
+    config.set("bootstrap.servers", env::var("KAFKA_HOST").unwrap());
+
+    let native_config = config.create_native_config().unwrap();
+
+    let client = match Client::new(
+        &config,
+        native_config,
+        RDKafkaType::RD_KAFKA_CONSUMER,
+        DefaultClientContext,
+    ) {
+        Ok(value) => value,
+        Err(err) => panic!("{}", err),
+    };
+
+    let group_list: GroupList;
+
+    loop {
+        match client.fetch_group_list(Some("aligner.jobs.group"), None) {
+            Ok(value) => {
+                group_list = value;
+                break;
+            }
+            Err(_) => continue,
+        }
+    }
+
+    for member in group_list.groups()[0].members() {
+        nodes.push(HealthCheckUnit {
+            consumer_name: member.id().to_owned(),
+            status: true,
+        })
+    }
+
+    Ok(warp::reply::json(&HealthCheck { nodes }))
 }
 
 // POST /validate handler
@@ -104,19 +146,16 @@ fn consume_results(uuid: Uuid) -> impl Stream<Item = Result<Event, warp::Error>>
                 Some(m) => {
                     let message = m.unwrap();
 
-                    if Uuid::from_str(&String::from_utf8(message.key().unwrap().to_vec()).unwrap())
-                        .unwrap()
-                        == uuid
-                    {
+                    let result: AlignJobResult =
+                        serde_json::from_slice(message.payload().unwrap()).unwrap();
+
+                    if result.uuid == uuid {
                         println!(
                             "{}@{}: Receiving data for job {}",
                             message.partition(),
                             message.offset(),
                             String::from_utf8(message.key().unwrap().to_vec()).unwrap(),
                         );
-
-                        let result: AlignJobResult =
-                            serde_json::from_slice(message.payload().unwrap()).unwrap();
 
                         if result.max_f > max_f {
                             max_f = result.max_f;
@@ -207,6 +246,7 @@ fn spawn_jobs(sequences: (Vec<u8>, Vec<u8>), job: &AlignJobRequest) {
         r_squared_value: job.r_squared_value,
         del_value: job.del_value,
         matrices_volume_value: job.matrices_volume_value,
+        uuid: job.uuid,
     };
 
     for matrix in matrices {
@@ -215,7 +255,7 @@ fn spawn_jobs(sequences: (Vec<u8>, Vec<u8>), job: &AlignJobRequest) {
         producer
             .send(
                 BaseRecord::to(&env::var("KAFKA_TOPIC_JOBS").unwrap())
-                    .key(&job.uuid.to_string())
+                    .key(&Uuid::new_v4().to_string())
                     .payload(&serde_json::to_string(&data).unwrap()),
             )
             .unwrap();

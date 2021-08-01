@@ -3,7 +3,15 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct HealthCheck {
+    pub nodes: Vec<HealthCheckUnit>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HealthCheckUnit {
+    pub consumer_name: String,
     pub status: bool,
 }
 
@@ -29,6 +37,7 @@ pub struct AlignJob {
     pub r_squared_value: f64,
     pub del_value: f64,
     pub matrices_volume_value: i32,
+    pub uuid: Uuid,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -36,6 +45,7 @@ pub struct AlignJobResult {
     pub matrix: Array2<f64>,
     pub max_f: f64,
     pub matrices_volume_value: i32,
+    pub uuid: Uuid,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

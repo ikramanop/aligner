@@ -1,6 +1,5 @@
 mod filters;
 mod handlers;
-mod models;
 
 use std::env;
 
