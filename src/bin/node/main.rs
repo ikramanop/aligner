@@ -66,7 +66,7 @@ async fn main() {
                     Protein::u8_vec_to_protein_vec(&job.sequence_2),
                 ));
 
-                let (current_f, optimal) = tool.local_alignment(
+                let (current_f, optimal, sequences) = tool.local_alignment(
                     job.del_value,
                     job.kd_value,
                     job.r_squared_value,
@@ -75,6 +75,8 @@ async fn main() {
                 );
 
                 consumer.commit_message(&m, CommitMode::Async).unwrap();
+
+                println!("{:?}", sequences);
 
                 producer
                     .send(

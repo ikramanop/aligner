@@ -1,6 +1,7 @@
 pub mod align;
 pub mod files;
 pub mod matrices;
+pub mod statistics;
 pub mod web;
 
 #[cfg(test)]

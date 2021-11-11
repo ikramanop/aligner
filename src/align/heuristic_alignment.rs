@@ -51,7 +51,7 @@ impl HeuristicPairwiseAlignmentTool {
         mut r_squared_value: f64,
         matrix: &Array2<f64>,
         frequences: &Array1<f64>,
-    ) -> (f64, Array2<f64>) {
+    ) -> (f64, Array2<f64>, (Vec<Protein>, Vec<Protein>)) {
         if r_squared_value == 0 as f64 {
             r_squared_value = (&matrix.len_of(Axis(0)) * &matrix.len_of(Axis(1))) as f64;
         }
@@ -61,6 +61,7 @@ impl HeuristicPairwiseAlignmentTool {
 
         let mut max_f = 0f64;
         let mut frequency_matrix: Array2<f64>;
+        let optimal_alignment: (Vec<Protein>, Vec<Protein>);
 
         loop {
             let result = HeuristicPairwiseAlignmentTool::local_alignment_step(
@@ -80,6 +81,7 @@ impl HeuristicPairwiseAlignmentTool {
                     transform_matrix(&frequency_matrix, &kd_value, &r_squared_value, &frequences)
                         .unwrap();
             } else {
+                optimal_alignment = result.optimal_alignment;
                 break;
             }
         }
@@ -87,6 +89,7 @@ impl HeuristicPairwiseAlignmentTool {
         (
             max_f,
             transform_matrix(&frequency_matrix, &kd_value, &r_squared_value, &frequences).unwrap(),
+            optimal_alignment,
         )
     }
 
