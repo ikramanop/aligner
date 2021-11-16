@@ -4,7 +4,7 @@ use ndarray_rand::rand::{thread_rng, Rng};
 use ndarray_rand::rand_distr::Uniform;
 use std::collections::HashMap;
 
-const UTF8_SYMBOLS: &'static [u8] = &[
+const UTF8_SYMBOLS: &[u8] = &[
     65, 82, 78, 68, 67, 81, 69, 71, 72, 73, 76, 75, 77, 70, 80, 83, 84, 87, 89, 86,
 ];
 

@@ -15,7 +15,7 @@ fn main() {
     let matrix: ndarray::Array2<f64>;
     let deletions: f64;
 
-    let db = match get_db(&"database/matrices") {
+    let db = match get_db("database/matrices") {
         Ok(db) => db,
         Err(err) => panic!("{}", err),
     };
@@ -68,7 +68,7 @@ fn main() {
         let contents = load_file_contents(path.as_path());
         let bytes = contents.as_bytes();
 
-        let mut reader = Reader::new(&bytes[..]);
+        let mut reader = Reader::new(bytes);
 
         let seqs: Vec<_> = match reader.records().collect() {
             Ok(seqs) => seqs,

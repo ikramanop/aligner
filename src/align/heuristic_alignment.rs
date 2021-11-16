@@ -44,7 +44,7 @@ impl HeuristicPairwiseAlignmentTool {
         }
     }
 
-    pub fn local_alignment<'a>(
+    pub fn local_alignment(
         &mut self,
         del: f64,
         kd_value: f64,
@@ -52,12 +52,12 @@ impl HeuristicPairwiseAlignmentTool {
         matrix: &Array2<f64>,
         frequences: &Array1<f64>,
     ) -> (f64, Array2<f64>, (Vec<Protein>, Vec<Protein>)) {
-        if r_squared_value == 0 as f64 {
-            r_squared_value = (&matrix.len_of(Axis(0)) * &matrix.len_of(Axis(1))) as f64;
+        if (r_squared_value - 0 as f64).abs() < f64::EPSILON {
+            r_squared_value = (matrix.len_of(Axis(0)) * matrix.len_of(Axis(1))) as f64;
         }
 
         let mut transformed_matrix =
-            transform_matrix(&matrix, &kd_value, &r_squared_value, &frequences).unwrap();
+            transform_matrix(matrix, &kd_value, &r_squared_value, frequences).unwrap();
 
         let mut max_f = 0f64;
         let mut frequency_matrix: Array2<f64>;
@@ -78,7 +78,7 @@ impl HeuristicPairwiseAlignmentTool {
             if result.max_f > max_f {
                 max_f = result.max_f;
                 transformed_matrix =
-                    transform_matrix(&frequency_matrix, &kd_value, &r_squared_value, &frequences)
+                    transform_matrix(&frequency_matrix, &kd_value, &r_squared_value, frequences)
                         .unwrap();
             } else {
                 optimal_alignment = result.optimal_alignment;
@@ -88,14 +88,14 @@ impl HeuristicPairwiseAlignmentTool {
 
         (
             max_f,
-            transform_matrix(&frequency_matrix, &kd_value, &r_squared_value, &frequences).unwrap(),
+            transform_matrix(&frequency_matrix, &kd_value, &r_squared_value, frequences).unwrap(),
             optimal_alignment,
         )
     }
 
     fn local_alignment_step(
-        sequence_1: &Vec<Protein>,
-        sequence_2: &Vec<Protein>,
+        sequence_1: &[Protein],
+        sequence_2: &[Protein],
         del: &f64,
         matrix: &Array2<f64>,
     ) -> HeuristicPairwiseAlignmentResult {
@@ -130,11 +130,11 @@ impl HeuristicPairwiseAlignmentTool {
 
                 if max == 0f64 {
                     direction_matrix[[y_real, x_real]] = Direction::Beginning
-                } else if max == top {
+                } else if (max - top).abs() < f64::EPSILON {
                     direction_matrix[[y_real, x_real]] = Direction::Top
-                } else if max == left {
+                } else if (max - left).abs() < f64::EPSILON {
                     direction_matrix[[y_real, x_real]] = Direction::Left
-                } else if max == diagonal {
+                } else if (max - diagonal).abs() < f64::EPSILON {
                     direction_matrix[[y_real, x_real]] = Direction::Diagonal
                 }
 
@@ -176,9 +176,9 @@ impl HeuristicPairwiseAlignmentTool {
         optimal_alignment_2.reverse();
 
         HeuristicPairwiseAlignmentResult {
-            alignment_matrix: alignment_matrix,
-            direction_matrix: direction_matrix,
-            max_f: max_f,
+            alignment_matrix,
+            direction_matrix,
+            max_f,
             optimal_alignment: (optimal_alignment_1, optimal_alignment_2),
         }
     }

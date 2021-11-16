@@ -1,5 +1,6 @@
 use std::cmp::PartialEq;
 use std::fmt::Debug;
+use std::hash::Hash;
 use std::str;
 
 #[derive(Debug, Clone, Copy)]
@@ -30,7 +31,7 @@ impl PartialEq for Nucleotide {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Eq)]
 pub enum Protein {
     A = 0,
     R = 1,
@@ -58,6 +59,12 @@ pub enum Protein {
     X = 23,
     Any = 24,
     Blank,
+}
+
+impl Hash for Protein {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        core::mem::discriminant(self).hash(state);
+    }
 }
 
 impl PartialEq for Protein {

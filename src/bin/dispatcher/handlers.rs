@@ -138,7 +138,7 @@ fn consume_results(uuid: Uuid) -> impl Stream<Item = Result<Event, warp::Error>>
         let mut counter = 0;
         let mut progress = 0f64;
 
-        let mut best_matrix: Array2<f64> = arr2(&vec![[0f64]]);
+        let mut best_matrix: Array2<f64> = arr2(&[[0f64]]);
         let mut max_f = 0f64;
 
         loop {
@@ -166,28 +166,30 @@ fn consume_results(uuid: Uuid) -> impl Stream<Item = Result<Event, warp::Error>>
 
                         consumer.commit_message(&message, CommitMode::Sync).unwrap();
 
-                        if progress == 1f64 {
-                            &tx.send(
-                                serde_json::to_string(&AlignmentResultEventResponse {
-                                    progress: progress * 100f64,
-                                    matrix: best_matrix,
-                                    max_f,
-                                })
-                                .unwrap(),
-                            )
-                            .unwrap();
+                        if (progress - 1f64).abs() < f64::EPSILON {
+                            let _ = &tx
+                                .send(
+                                    serde_json::to_string(&AlignmentResultEventResponse {
+                                        progress: progress * 100f64,
+                                        matrix: best_matrix,
+                                        max_f,
+                                    })
+                                    .unwrap(),
+                                )
+                                .unwrap();
 
                             break;
                         }
 
-                        &tx.send(
-                            serde_json::to_string(&ProgressEventResponse {
-                                progress: progress * 100f64,
-                                message: "Выравнивание вычисляется".to_owned(),
-                            })
-                            .unwrap(),
-                        )
-                        .unwrap();
+                        let _ = &tx
+                            .send(
+                                serde_json::to_string(&ProgressEventResponse {
+                                    progress: progress * 100f64,
+                                    message: "Выравнивание вычисляется".to_owned(),
+                                })
+                                .unwrap(),
+                            )
+                            .unwrap();
                     }
                 }
                 None => tx
@@ -214,7 +216,7 @@ fn spawn_jobs(sequences: (Vec<u8>, Vec<u8>), job: &AlignJobRequest) {
         .create()
         .unwrap();
 
-    let db = &get_db(&"database/matrices").unwrap();
+    let db = &get_db("database/matrices").unwrap();
 
     let matrices = get_population(
         &job.matrices_volume_value,

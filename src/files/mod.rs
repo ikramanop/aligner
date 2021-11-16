@@ -27,22 +27,16 @@ fn read_file(path: &Path, write: bool) -> FileStruct {
 }
 
 pub fn write_to_file(path: &Path, contents: &str) {
-    let FileStruct(_, display, mut file) = read_file(path, true);
+    let FileStruct(_, _, mut file) = read_file(path, true);
 
-    match file.write_all(contents.as_bytes()) {
-        Err(why) => panic!("error writing to {}: {}", display, why),
-        _ => {}
-    }
+    file.write_all(contents.as_bytes()).unwrap();
 }
 
 pub fn load_file_contents(path: &Path) -> String {
-    let FileStruct(_, display, mut file) = read_file(path, false);
+    let FileStruct(_, _, mut file) = read_file(path, false);
 
     let mut contents = String::new();
-    match file.read_to_string(&mut contents) {
-        Err(why) => panic!("couldn't read {}: {}", display, why),
-        Ok(_) => {}
-    };
+    file.read_to_string(&mut contents).unwrap();
 
     contents
 }
@@ -86,7 +80,7 @@ pub fn convert_matrix_to_csv(matrix: &Array2<f64>) -> Vec<u8> {
 pub fn get_db(path: &str) -> Result<sled::Db, &'static str> {
     let tree = match sled::open(path) {
         Ok(tree) => tree,
-        Err(_) => return Err("Something wrong happend with db"),
+        Err(_) => return Err("Something wrong happened with db"),
     };
 
     match tree.get("BLOSUM50") {
@@ -100,7 +94,7 @@ pub fn get_db(path: &str) -> Result<sled::Db, &'static str> {
                 }
             };
         }
-        Err(_) => return Err("Something wrong happend with db"),
+        Err(_) => return Err("Something wrong happened with db"),
         _ => {}
     };
 

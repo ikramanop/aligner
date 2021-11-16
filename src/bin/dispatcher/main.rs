@@ -6,7 +6,7 @@ use std::env;
 use filters::get_api;
 use warp::Filter;
 
-fn load_config<'a>(path: &'a str) {
+fn load_config(path: &'_ str) {
     println!("{:?}", path);
     dotenv::from_filename(path).unwrap();
 }

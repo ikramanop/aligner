@@ -14,5 +14,6 @@ COPY ./config/node ./config
 COPY --from=builder /app/target/release .
 
 ENV CONFIG_PATH=./config/prod.env
+ENV RUST_LOG=info
 
 ENTRYPOINT ["./node"]

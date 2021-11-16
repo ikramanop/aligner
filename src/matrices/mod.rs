@@ -42,15 +42,11 @@ pub fn get_population(amount: &i32, dim: (usize, usize), db: &sled::Db) -> Vec<A
 
         if check {
             count += 1;
-            match db.insert(
+            db.insert(
                 format!("matrix_{}_{}_{}", dim.0, dim.1, count),
                 convert_matrix_to_csv(&matrix),
-            ) {
-                Err(err) => {
-                    panic!("{}", err)
-                }
-                _ => {}
-            };
+            )
+            .unwrap();
             matrices.push(matrix);
             println!("Generating.... {}", count);
         }
@@ -81,31 +77,31 @@ pub fn transform_matrix(
         1f64 / matrix.len_of(Axis(1)) as f64
     });
 
-    let p = cross_product(&frequences, &f);
+    let p = cross_product(frequences, &f);
     let p_squared = p.mapv(|a| a.powf(2.)).sum();
 
     let k_0 = (&p * matrix).sum();
 
-    let a = (k_d - &k_0) / &p_squared;
-    let b = k_d / &p_squared;
-    let difference = &a - &b;
+    let a = (k_d - k_0) / p_squared;
+    let b = k_d / p_squared;
+    let difference = a - b;
 
     let denominator = (matrix + &p * difference).mapv(|a| a.powf(2.)).sum();
 
     let a_coeff = (2. * b * (&p * (matrix + &p * difference)).sum()) / denominator;
-    let b_coeff = (&b.powf(2.) * &p_squared - r_squared) / denominator;
+    let b_coeff = (b.powf(2.) * p_squared - r_squared) / denominator;
 
-    let new_matrix = match find_roots_quadratic(1f64, a_coeff, b_coeff) {
+    match find_roots_quadratic(1f64, a_coeff, b_coeff) {
         Roots::No(_) => Err("Wrong matrix specified"),
-        Roots::One(roots) => Ok(&p * b + roots[0] * (matrix + &p * (&a - &b))),
+        Roots::One(roots) => Ok(&p * b + roots[0] * (matrix + &p * (a - b))),
         Roots::Two(roots) => {
             if roots[0] > 0f64 && roots[1] < 0f64 {
-                Ok(&p * b + roots[0] * (matrix + &p * (&a - &b)))
+                Ok(&p * b + roots[0] * (matrix + &p * (a - b)))
             } else if roots[0] < 0f64 && roots[1] > 0f64 {
-                Ok(&p * b + roots[1] * (matrix + &p * (&a - &b)))
+                Ok(&p * b + roots[1] * (matrix + &p * (a - b)))
             } else {
-                let new_matrix_1 = &p * b + roots[0] * (matrix + &p * (&a - &b));
-                let new_matrix_2 = &p * b + roots[1] * (matrix + &p * (&a - &b));
+                let new_matrix_1 = &p * b + roots[0] * (matrix + &p * (a - b));
+                let new_matrix_2 = &p * b + roots[1] * (matrix + &p * (a - b));
 
                 let distance_1 = matrix.l2_dist(&new_matrix_1).unwrap();
                 let distance_2 = matrix.l2_dist(&new_matrix_2).unwrap();
@@ -118,7 +114,5 @@ pub fn transform_matrix(
             }
         }
         _ => panic!("This should not happen"),
-    };
-
-    new_matrix
+    }
 }

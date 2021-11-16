@@ -66,11 +66,11 @@ impl Aligner for SimpleAligner {
 
                 alignment_matrix[[y_real, x_real]] = max;
 
-                if max == top {
+                if (max - top).abs() < f64::EPSILON {
                     direction_matrix[[y_real, x_real]] = Direction::Top
-                } else if max == left {
+                } else if (max - left).abs() < f64::EPSILON {
                     direction_matrix[[y_real, x_real]] = Direction::Left
-                } else if max == diagonal {
+                } else if (max - diagonal).abs() < f64::EPSILON {
                     direction_matrix[[y_real, x_real]] = Direction::Diagonal
                 }
             }
@@ -109,8 +109,8 @@ impl Aligner for SimpleAligner {
         optimal_alignment_2.reverse();
 
         Box::new(GlobalAlignmentResult {
-            alignment_matrix: alignment_matrix,
-            direction_matrix: direction_matrix,
+            alignment_matrix,
+            direction_matrix,
             optimal_alignment: (optimal_alignment_1, optimal_alignment_2),
         })
     }
@@ -146,11 +146,11 @@ impl Aligner for SimpleAligner {
 
                 if max == 0f64 {
                     direction_matrix[[y_real, x_real]] = Direction::Beginning
-                } else if max == top {
+                } else if (max - top).abs() < f64::EPSILON {
                     direction_matrix[[y_real, x_real]] = Direction::Top
-                } else if max == left {
+                } else if (max - left).abs() < f64::EPSILON {
                     direction_matrix[[y_real, x_real]] = Direction::Left
-                } else if max == diagonal {
+                } else if (max - diagonal).abs() < f64::EPSILON {
                     direction_matrix[[y_real, x_real]] = Direction::Diagonal
                 }
 
@@ -194,9 +194,9 @@ impl Aligner for SimpleAligner {
         optimal_alignment_2.reverse();
 
         Box::new(LocalAlignmentResult {
-            alignment_matrix: alignment_matrix,
-            direction_matrix: direction_matrix,
-            max_f: max_f,
+            alignment_matrix,
+            direction_matrix,
+            max_f,
             optimal_alignment: (optimal_alignment_1, optimal_alignment_2),
         })
     }

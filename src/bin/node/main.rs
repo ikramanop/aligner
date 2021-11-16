@@ -3,7 +3,7 @@ use aligner::{
     align::enums::Protein,
     web::models::{AlignJob, AlignJobResult},
 };
-use dotenv;
+
 use rdkafka::{consumer::CommitMode, message::Message, producer::FutureRecord};
 use rdkafka::{
     consumer::{Consumer, StreamConsumer},
@@ -13,7 +13,7 @@ use rdkafka::{
 use serde_json::from_slice;
 use std::{env, time::Duration};
 
-fn load_config<'a>(path: &'a str) {
+fn load_config(path: &'_ str) {
     println!("{:?}", path);
     dotenv::from_filename(path).unwrap();
 }
