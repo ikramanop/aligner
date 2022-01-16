@@ -1,26 +1,27 @@
 mod filters;
 mod handlers;
-
-use std::env;
-
 use filters::get_api;
+use std::env;
 use warp::Filter;
 
+extern crate pretty_env_logger;
+#[macro_use]
+extern crate log;
+
 fn load_config(path: &'_ str) {
-    println!("{:?}", path);
+    debug!("Loading config from {:?}.", path);
     dotenv::from_filename(path).unwrap();
+    debug!("Config successfully loaded.")
 }
 
 #[tokio::main]
 async fn main() {
+    pretty_env_logger::init();
+
     match env::var("CONFIG_PATH") {
         Ok(value) => load_config(&value),
         Err(err) => panic!("Unable to load config: {}", err),
     }
-
-    println!("{:?}", env::var("SERVER_ENV").unwrap());
-
-    pretty_env_logger::init();
 
     let routes = get_api().with(warp::log("aligner"));
 

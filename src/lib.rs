@@ -1,7 +1,9 @@
 extern crate pretty_env_logger;
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate log;
 
 pub mod align;
+pub mod database;
 pub mod files;
 pub mod matrices;
 pub mod statistics;

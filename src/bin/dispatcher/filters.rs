@@ -34,7 +34,7 @@ pub fn validate() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejec
         .with(cors_validate)
 }
 
-// GET {uuid}/progress for sse update process events
+// GET /progress?hashes=[] for sse update process events
 pub fn progress() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     let cors_progress = warp::cors()
         .allow_any_origin()
@@ -42,8 +42,8 @@ pub fn progress() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejec
         .allow_methods(&[Method::GET]);
 
     warp::get()
-        .and(warp::path::param())
         .and(warp::path("progress"))
+        .and(warp::query::<Vec<String>>())
         .and_then(handlers::progress)
         .with(cors_progress)
 }

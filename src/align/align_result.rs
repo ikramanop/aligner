@@ -6,6 +6,7 @@ use std::str::from_utf8;
 pub struct GlobalAlignmentResult {
     pub alignment_matrix: Array2<f64>,
     pub direction_matrix: Array2<Direction>,
+    pub max_f: f64,
     pub optimal_alignment: (Vec<Protein>, Vec<Protein>),
 }
 
@@ -45,6 +46,10 @@ impl AlignmentResult for GlobalAlignmentResult {
         }
 
         frequency_matrix
+    }
+
+    fn get_score(&self) -> f64 {
+        self.max_f
     }
 }
 
@@ -93,5 +98,9 @@ impl AlignmentResult for LocalAlignmentResult {
         }
 
         frequency_matrix
+    }
+
+    fn get_score(&self) -> f64 {
+        self.max_f
     }
 }

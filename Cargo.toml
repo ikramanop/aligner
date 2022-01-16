@@ -1,6 +1,6 @@
 [package]
 name = "aligner"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["l.marder"]
 edition = "2018"
 
@@ -25,4 +25,6 @@ log = "0.4.14"
 scopeguard = "1.1.0"
 uuid = { version = "0.8.2", features = ["v4", "serde"] }
 dotenv = "0.15.0"
-rdkafka = { version = "0.27.0", features = ["dynamic-linking"] }
+rdkafka = { version = "0.28.0", features = ["dynamic-linking"] }
+mysql = "21.0.2"
+rand = "0.8.4"

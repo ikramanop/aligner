@@ -111,6 +111,7 @@ impl Aligner for SimpleAligner {
         Box::new(GlobalAlignmentResult {
             alignment_matrix,
             direction_matrix,
+            max_f: 0f64,
             optimal_alignment: (optimal_alignment_1, optimal_alignment_2),
         })
     }

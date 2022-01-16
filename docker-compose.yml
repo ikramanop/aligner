@@ -29,13 +29,34 @@ services:
       - zookeeper
     healthcheck:
       test:
-        [ "CMD", "kafka-topics.sh", "--list", "--zookeeper", "zookeeper:2181" ]
+        [
+          "CMD",
+          "kafka-topics.sh",
+          "--list",
+          "--zookeeper",
+          "zookeeper:2181"
+        ]
       interval: 30s
       timeout: 10s
       retries: 4
+
+  mariadb:
+    image: lscr.io/linuxserver/mariadb:alpine
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_DATABASE=aligner
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=aligner
+      - MYSQL_PASSWORD=aligner
+      - TZ=Europe/Moscow
+    volumes:
+      - mariadb_data:/config
 
 volumes:
   zookeeper_data:
     driver: local
   kafka_data:
+    driver: local
+  mariadb_data:
     driver: local

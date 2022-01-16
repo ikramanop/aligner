@@ -14,11 +14,12 @@ pub struct HeuristicPairwiseAlignmentResult {
     pub direction_matrix: Array2<Direction>,
     pub max_f: f64,
     optimal_alignment: (Vec<Protein>, Vec<Protein>),
+    dim: usize
 }
 
 impl HeuristicPairwiseAlignmentResult {
     pub fn get_frequency_matrix(&self) -> Array2<f64> {
-        let mut frequency_matrix = Array2::<f64>::zeros((20, 20));
+        let mut frequency_matrix = Array2::<f64>::zeros((self.dim, self.dim));
 
         for (x, y) in self
             .optimal_alignment
@@ -180,6 +181,7 @@ impl HeuristicPairwiseAlignmentTool {
             direction_matrix,
             max_f,
             optimal_alignment: (optimal_alignment_1, optimal_alignment_2),
+            dim: matrix.dim().0
         }
     }
 }

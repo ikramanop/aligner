@@ -7,6 +7,7 @@ pub trait AlignmentResult {
     fn get_direction_matrix(&self) -> &Array2<Direction>;
     fn get_optimal_alignment(&self) -> (&Vec<Protein>, &Vec<Protein>);
     fn get_frequency_matrix(&self) -> Array2<f64>;
+    fn get_score(&self) -> f64;
 }
 
 pub trait Aligner {

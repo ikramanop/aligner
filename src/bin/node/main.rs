@@ -1,31 +1,33 @@
 use aligner::align::heuristic_alignment::HeuristicPairwiseAlignmentTool;
-use aligner::{
-    align::enums::Protein,
-    web::models::{AlignJob, AlignJobResult},
-};
+use aligner::database::get_connection;
+use aligner::{align::enums::Protein, web::models::AlignJob};
 
-use rdkafka::{consumer::CommitMode, message::Message, producer::FutureRecord};
+use rdkafka::{consumer::CommitMode, message::Message};
 use rdkafka::{
     consumer::{Consumer, StreamConsumer},
-    producer::FutureProducer,
     ClientConfig,
 };
 use serde_json::from_slice;
-use std::{env, time::Duration};
+use std::env;
+
+extern crate pretty_env_logger;
+#[macro_use]
+extern crate log;
 
 fn load_config(path: &'_ str) {
-    println!("{:?}", path);
+    debug!("Loading config from {:?}.", path);
     dotenv::from_filename(path).unwrap();
+    debug!("Config successfully loaded.")
 }
 
 #[tokio::main]
 async fn main() {
+    pretty_env_logger::init();
+
     match env::var("CONFIG_PATH") {
         Ok(value) => load_config(&value),
         Err(err) => panic!("Unable to load config: {}", err),
     }
-
-    println!("{:?}", env::var("SERVER_ENV").unwrap());
 
     let consumer: &StreamConsumer = &ClientConfig::new()
         .set("group.id", env::var("KAFKA_CONSUMER_GROUP").unwrap())
@@ -41,19 +43,15 @@ async fn main() {
         .subscribe(&[&env::var("KAFKA_TOPIC_JOBS").unwrap()])
         .unwrap();
 
-    let producer: &FutureProducer = &ClientConfig::new()
-        .set("bootstrap.servers", env::var("KAFKA_HOST").unwrap())
-        .set("message.timeout.ms", "1000")
-        .create()
-        .unwrap();
+    let mut conn = get_connection(false);
 
     loop {
         match consumer.recv().await {
             Ok(m) => {
                 m.payload();
 
-                println!(
-                    "{}:{}@{}: Matrix {}",
+                debug!(
+                    "Consuming {}:{}@{}: Subtask with uuid {}.",
                     m.topic(),
                     m.partition(),
                     m.offset(),
@@ -76,25 +74,17 @@ async fn main() {
 
                 consumer.commit_message(&m, CommitMode::Async).unwrap();
 
-                println!("{:?}", sequences);
-
-                producer
-                    .send(
-                        FutureRecord::to(&env::var("KAFKA_TOPIC_RESULTS").unwrap())
-                            .key(&String::from_utf8(m.key().unwrap().to_vec()).unwrap())
-                            .payload(
-                                &serde_json::to_string(&AlignJobResult {
-                                    matrix: optimal,
-                                    max_f: current_f,
-                                    matrices_volume_value: job.matrices_volume_value,
-                                    uuid: job.uuid,
-                                })
-                                .unwrap(),
-                            ),
-                        Duration::from_secs(0),
-                    )
-                    .await
-                    .ok();
+                if conn
+                    .insert_align_subtask(job.hash.clone(), current_f, &optimal, sequences.clone())
+                    .is_err()
+                {
+                    conn = get_connection(false);
+                    if let Err(err) =
+                        conn.insert_align_subtask(job.hash, current_f, &optimal, sequences)
+                    {
+                        debug!("Failed with {}. Error with inserting subtask.", err)
+                    }
+                };
             }
             Err(err) => panic!("Kafka error: {}", err),
         };

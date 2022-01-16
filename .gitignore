@@ -3,5 +3,7 @@
 **/dev.rs
 **/dev_2.rs
 .vscode
-database
+/database
 .VSCodeCounter
+**/test**
+examples

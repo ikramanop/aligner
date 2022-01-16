@@ -7,7 +7,7 @@ use rdkafka::{
 #[tokio::main]
 async fn main() {
     let consumer: &BaseConsumer = &ClientConfig::new()
-        .set("group.id", "aligner.results.group")
+        .set("group.id", "aligner.jobs.group")
         .set("bootstrap.servers", "localhost:9092")
         .set("enable.partition.eof", "false")
         .set("session.timeout.ms", "10000")
@@ -16,7 +16,7 @@ async fn main() {
         .create()
         .unwrap();
 
-    consumer.subscribe(&["aligner.results"]).unwrap();
+    consumer.subscribe(&["aligner.jobs"]).unwrap();
 
     loop {
         match consumer.poll(None) {

@@ -1,70 +1,79 @@
-use crate::files::convert_csv_to_matrix;
-use crate::files::convert_matrix_to_csv;
+use crate::database::Connector;
 use ndarray::Axis;
 use ndarray::{Array1, Array2};
 use ndarray_rand::rand_distr::Uniform;
 use ndarray_rand::RandomExt;
 use ndarray_stats::DeviationExt;
 use roots::{find_roots_quadratic, Roots};
+use std::error::Error;
+use std::result::Result;
 
 fn get_threshold(dim_1: usize) -> f64 {
     match dim_1 {
         20 => 22.6,
+        21 => 23.1,
+        22 => 23.6,
+        23 => 24.1,
+        24 => 24.6,
         _ => 0 as f64,
     }
 }
 
-pub fn get_population(amount: &i32, dim: (usize, usize), db: &sled::Db) -> Vec<Array2<f64>> {
-    let mut matrices: Vec<Array2<f64>> = Vec::<Array2<f64>>::new();
-
-    let mut count = 0;
-    for key_matrix in db.scan_prefix(format!("matrix_{}_{}", dim.0, dim.1).as_bytes()) {
-        if count == *amount {
-            break;
-        }
-        matrices.push(convert_csv_to_matrix(&key_matrix.unwrap().1, dim));
-        count += 1;
+pub fn get_population(
+    conn: &mut Connector,
+    dim: usize,
+    limit: usize,
+) -> Result<Vec<Array2<f64>>, impl Error> {
+    let mut matrices: Vec<Array2<f64>> = match conn.get_base_matrices_with_limit(dim, limit) {
+        Ok(matrices) => matrices,
+        Err(err) => return Err(err),
     }
+    .iter()
+    .map(|matrix| serde_json::from_str(matrix).unwrap())
+    .collect();
 
-    let threshold = get_threshold(dim.0);
+    if matrices.len() < limit {
+        debug!(
+            "Insufficient matrices in database. Needed {}, got {}. Generating additional matrices.",
+            limit,
+            matrices.len()
+        );
 
-    while count < *amount {
-        let matrix = Array2::random(dim, Uniform::new_inclusive(-1, 1)).mapv(|a| a as f64);
+        let threshold = get_threshold(dim);
 
-        let mut check = true;
-        for item in matrices.iter() {
-            let distance = item.l2_dist(&matrix).unwrap();
-            if distance < threshold {
-                check = false;
-                break;
+        for _ in matrices.len()..limit {
+            let mut check = false;
+            while !check {
+                let matrix =
+                    Array2::random((dim, dim), Uniform::new_inclusive(-1, 1)).mapv(|a| a as f64);
+
+                check = true;
+                for item in matrices.iter() {
+                    let distance = item.l2_dist(&matrix).unwrap();
+                    if distance < threshold {
+                        check = false;
+                        break;
+                    }
+                }
+                if !check {
+                    continue;
+                }
+
+                if let Err(err) = conn.insert_base_matrix(dim, &matrix) {
+                    return Err(err);
+                };
+
+                matrices.push(matrix);
             }
         }
 
-        if check {
-            count += 1;
-            db.insert(
-                format!("matrix_{}_{}_{}", dim.0, dim.1, count),
-                convert_matrix_to_csv(&matrix),
-            )
-            .unwrap();
-            matrices.push(matrix);
-            println!("Generating.... {}", count);
-        }
+        debug!(
+            "Successfully generated {} matrices.",
+            limit - matrices.len()
+        );
     }
 
-    matrices
-}
-
-fn cross_product(array1: &Array1<f64>, array2: &Array1<f64>) -> Array2<f64> {
-    let mut result = Array2::<f64>::zeros((array1.len(), array2.len()));
-
-    for (y, elem_1) in array1.iter().enumerate() {
-        for (x, elem_2) in array2.iter().enumerate() {
-            result[[y, x]] = elem_1 * elem_2
-        }
-    }
-
-    result
+    Ok(matrices)
 }
 
 pub fn transform_matrix(
@@ -115,4 +124,16 @@ pub fn transform_matrix(
         }
         _ => panic!("This should not happen"),
     }
+}
+
+fn cross_product(array1: &Array1<f64>, array2: &Array1<f64>) -> Array2<f64> {
+    let mut result = Array2::<f64>::zeros((array1.len(), array2.len()));
+
+    for (y, elem_1) in array1.iter().enumerate() {
+        for (x, elem_2) in array2.iter().enumerate() {
+            result[[y, x]] = elem_1 * elem_2
+        }
+    }
+
+    result
 }
