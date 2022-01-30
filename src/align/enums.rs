@@ -58,7 +58,8 @@ pub enum Protein {
     Z = 22,
     X = 23,
     Any = 24,
-    Blank,
+    Del,
+    Ins,
 }
 
 impl Hash for Protein {
@@ -132,7 +133,8 @@ impl Protein {
             Protein::Z => 90,
             Protein::X => 88,
             Protein::Any => 42,
-            Protein::Blank => 95,
+            Protein::Del => 45,
+            Protein::Ins => 43,
         }
     }
 

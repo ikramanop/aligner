@@ -11,8 +11,8 @@ pub trait AlignmentResult {
 }
 
 pub trait Aligner {
-    fn local_alignment(&mut self, del: &f64, matrix: &Array2<f64>) -> Box<dyn AlignmentResult>;
-    fn global_alignment(&mut self, del: &f64, matrix: &Array2<f64>) -> Box<dyn AlignmentResult>;
+    fn local_alignment(&mut self, del: f64, ins: f64, matrix: &Array2<f64>) -> Box<dyn AlignmentResult>;
+    fn global_alignment(&mut self, del: f64, ins: f64, matrix: &Array2<f64>) -> Box<dyn AlignmentResult>;
     fn get_symbolic(&mut self) -> (String, String);
 }
 

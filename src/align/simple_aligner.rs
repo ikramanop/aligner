@@ -26,7 +26,7 @@ impl SimpleAligner {
 }
 
 impl Aligner for SimpleAligner {
-    fn global_alignment(&mut self, del: &f64, matrix: &Array2<f64>) -> Box<dyn AlignmentResult> {
+    fn global_alignment(&mut self, del: f64, ins: f64, matrix: &Array2<f64>) -> Box<dyn AlignmentResult> {
         let mut alignment_matrix =
             Array2::<f64>::zeros((self.u8_sequence_2.len() + 1, self.u8_sequence_1.len() + 1));
         let mut direction_matrix = Array2::<Direction>::from_shape_fn(
@@ -35,7 +35,7 @@ impl Aligner for SimpleAligner {
         );
 
         for x in 1..self.u8_sequence_1.len() + 1 {
-            alignment_matrix[[0, x]] = -(x as f64) * del;
+            alignment_matrix[[0, x]] = -(x as f64) * ins;
             direction_matrix[[0, x]] = Direction::Left
         }
 
@@ -47,7 +47,7 @@ impl Aligner for SimpleAligner {
         alignment_matrix[[self.u8_sequence_2.len(), 0]] =
             -(self.u8_sequence_2.len() as f64 + 1f64) * del;
         alignment_matrix[[0, self.u8_sequence_1.len()]] =
-            -(self.u8_sequence_1.len() as f64 + 1f64) * del;
+            -(self.u8_sequence_1.len() as f64 + 1f64) * ins;
 
         for (x, elem_1) in self.protein_sequence_1.iter().enumerate() {
             for (y, elem_2) in self.protein_sequence_2.iter().enumerate() {
@@ -58,7 +58,7 @@ impl Aligner for SimpleAligner {
                 let seq_2_pos = *elem_2 as usize;
 
                 let top = alignment_matrix[[y_real - 1, x_real]] - del;
-                let left = alignment_matrix[[y_real, x_real - 1]] - del;
+                let left = alignment_matrix[[y_real, x_real - 1]] - ins;
                 let diagonal =
                     alignment_matrix[[y_real - 1, x_real - 1]] + matrix[[seq_2_pos, seq_1_pos]];
 
@@ -87,13 +87,13 @@ impl Aligner for SimpleAligner {
             match direction_matrix[[current_y, current_x]] {
                 Direction::Beginning => break,
                 Direction::Top => {
-                    optimal_alignment_1.push(Protein::Blank);
+                    optimal_alignment_1.push(Protein::Del);
                     optimal_alignment_2.push(self.protein_sequence_2[current_y - 1]);
                     current_y -= 1;
                 }
                 Direction::Left => {
                     optimal_alignment_1.push(self.protein_sequence_1[current_x - 1]);
-                    optimal_alignment_2.push(Protein::Blank);
+                    optimal_alignment_2.push(Protein::Ins);
                     current_x -= 1;
                 }
                 Direction::Diagonal => {
@@ -116,7 +116,7 @@ impl Aligner for SimpleAligner {
         })
     }
 
-    fn local_alignment(&mut self, del: &f64, matrix: &Array2<f64>) -> Box<dyn AlignmentResult> {
+    fn local_alignment(&mut self, del: f64, ins: f64, matrix: &Array2<f64>) -> Box<dyn AlignmentResult> {
         let mut alignment_matrix =
             Array2::<f64>::zeros((self.u8_sequence_2.len() + 1, self.u8_sequence_1.len() + 1));
         let mut direction_matrix = Array2::<Direction>::from_shape_fn(
@@ -137,7 +137,7 @@ impl Aligner for SimpleAligner {
                 let seq_2_pos = *elem_2 as usize;
 
                 let top = alignment_matrix[[y_real - 1, x_real]] - del;
-                let left = alignment_matrix[[y_real, x_real - 1]] - del;
+                let left = alignment_matrix[[y_real, x_real - 1]] - ins;
                 let diagonal =
                     alignment_matrix[[y_real - 1, x_real - 1]] + matrix[[seq_2_pos, seq_1_pos]];
 
@@ -173,13 +173,13 @@ impl Aligner for SimpleAligner {
             match direction_matrix[[current_y, current_x]] {
                 Direction::Beginning => break,
                 Direction::Top => {
-                    optimal_alignment_1.push(Protein::Blank);
+                    optimal_alignment_1.push(Protein::Del);
                     optimal_alignment_2.push(self.protein_sequence_2[current_y - 1]);
                     current_y -= 1;
                 }
                 Direction::Left => {
                     optimal_alignment_1.push(self.protein_sequence_1[current_x - 1]);
-                    optimal_alignment_2.push(Protein::Blank);
+                    optimal_alignment_2.push(Protein::Ins);
                     current_x -= 1;
                 }
                 Direction::Diagonal => {

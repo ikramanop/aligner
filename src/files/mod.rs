@@ -51,7 +51,7 @@ pub fn convert_csv_to_matrix(csv_matrix: &[u8], dim: (usize, usize)) -> Array2<f
     for (i, record) in reader.records().enumerate() {
         let matrix_row = match record {
             Ok(row) => row,
-            Err(_) => panic!("error reading matrix"),
+            Err(err) => panic!("error reading matrix: {}", err),
         };
         for (j, elem) in matrix_row.iter().enumerate() {
             result_matrix[[i, j]] = elem.parse::<f64>().unwrap();

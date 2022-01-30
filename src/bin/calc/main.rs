@@ -22,6 +22,7 @@ fn main() {
             subtask.target_sequence.to_bytes(),
             subtask.f_value,
             subtask.del_value,
+            subtask.del_value,
             &subtask.matrix,
         )
         .unwrap();

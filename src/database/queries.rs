@@ -107,3 +107,18 @@ update align_tasks set p_value = ? where id = ?
 pub const GET_ALL_HASHES: &str = "
 select hash from align_tasks where p_value is null
 ";
+
+pub const GET_CMP_SEQUENCE_IDS_WITH_NULL_P_VALUE: &str = "
+select id, query_sequence, target_sequence from blast_cmp
+where p_value is null
+";
+
+pub const GET_SEQUENCE_BY_IDENTIFIER: &str = "
+select query_sequence from align_tasks
+where query_sequence_id = ?
+limit 1
+";
+
+pub const ADD_CMP_P_VALUE_BY_ID: &str = "
+update blast_cmp set p_value = ? where id = ?
+";

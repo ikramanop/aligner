@@ -260,6 +260,7 @@ pub fn calculate_p_value(
     target_sequence: &[u8],
     initial_score: f64,
     del: f64,
+    ins: f64,
     matrix: &Array2<f64>,
 ) -> Result<f64, impl Error> {
     debug!("Started shuffling and calculating input sequences!!");
@@ -291,7 +292,8 @@ pub fn calculate_p_value(
 
                     let mut aligner = SimpleAligner::from_seqs(&query_sequence_clone, &new_seq);
 
-                    scores_scoped.push(aligner.local_alignment(&del, &matrix_clone).get_score());
+                    scores_scoped
+                        .push(aligner.local_alignment(del, ins, &matrix_clone).get_score());
                     lengths_scoped.push(new_seq.len());
                 }
 

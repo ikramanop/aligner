@@ -14,7 +14,7 @@ pub struct HeuristicPairwiseAlignmentResult {
     pub direction_matrix: Array2<Direction>,
     pub max_f: f64,
     optimal_alignment: (Vec<Protein>, Vec<Protein>),
-    dim: usize
+    dim: usize,
 }
 
 impl HeuristicPairwiseAlignmentResult {
@@ -27,7 +27,9 @@ impl HeuristicPairwiseAlignmentResult {
             .iter()
             .zip(self.optimal_alignment.1.iter())
         {
-            if *x != Protein::Blank && *y != Protein::Blank {
+            if (*x != Protein::Del || *x != Protein::Ins)
+                && (*y != Protein::Del || *y != Protein::Ins)
+            {
                 frequency_matrix[[*y as usize, *x as usize]] += 1f64;
             }
         }
@@ -48,6 +50,7 @@ impl HeuristicPairwiseAlignmentTool {
     pub fn local_alignment(
         &mut self,
         del: f64,
+        ins: f64,
         kd_value: f64,
         mut r_squared_value: f64,
         matrix: &Array2<f64>,
@@ -68,7 +71,8 @@ impl HeuristicPairwiseAlignmentTool {
             let result = HeuristicPairwiseAlignmentTool::local_alignment_step(
                 &self.sequences_pair.0,
                 &self.sequences_pair.1,
-                &del,
+                del,
+                ins,
                 &transformed_matrix,
             );
 
@@ -97,7 +101,8 @@ impl HeuristicPairwiseAlignmentTool {
     fn local_alignment_step(
         sequence_1: &[Protein],
         sequence_2: &[Protein],
-        del: &f64,
+        del: f64,
+        ins: f64,
         matrix: &Array2<f64>,
     ) -> HeuristicPairwiseAlignmentResult {
         let mut alignment_matrix =
@@ -121,7 +126,7 @@ impl HeuristicPairwiseAlignmentTool {
                 let seq_2_pos = *elem_2 as usize;
 
                 let top = alignment_matrix[[y_real - 1, x_real]] - del;
-                let left = alignment_matrix[[y_real, x_real - 1]] - del;
+                let left = alignment_matrix[[y_real, x_real - 1]] - ins;
                 let diagonal =
                     alignment_matrix[[y_real - 1, x_real - 1]] + matrix[[seq_2_pos, seq_1_pos]];
 
@@ -155,13 +160,13 @@ impl HeuristicPairwiseAlignmentTool {
             match direction_matrix[[current_y, current_x]] {
                 Direction::Beginning => break,
                 Direction::Top => {
-                    optimal_alignment_1.push(Protein::Blank);
+                    optimal_alignment_1.push(Protein::Del);
                     optimal_alignment_2.push(sequence_2[current_y - 1]);
                     current_y -= 1;
                 }
                 Direction::Left => {
                     optimal_alignment_1.push(sequence_1[current_x - 1]);
-                    optimal_alignment_2.push(Protein::Blank);
+                    optimal_alignment_2.push(Protein::Ins);
                     current_x -= 1;
                 }
                 Direction::Diagonal => {
@@ -181,7 +186,7 @@ impl HeuristicPairwiseAlignmentTool {
             direction_matrix,
             max_f,
             optimal_alignment: (optimal_alignment_1, optimal_alignment_2),
-            dim: matrix.dim().0
+            dim: matrix.dim().0,
         }
     }
 }

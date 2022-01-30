@@ -66,6 +66,7 @@ async fn main() {
 
                 let (current_f, optimal, sequences) = tool.local_alignment(
                     job.del_value,
+                    job.del_value,
                     job.kd_value,
                     job.r_squared_value,
                     &job.matrix.unwrap(),

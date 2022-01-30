@@ -40,7 +40,7 @@ impl AlignmentResult for GlobalAlignmentResult {
             .iter()
             .zip(self.optimal_alignment.1.iter())
         {
-            if *x != Protein::Blank && *y != Protein::Blank {
+            if (*x != Protein::Del || *x != Protein::Ins) && (*y != Protein::Del || *y != Protein::Ins) {
                 frequency_matrix[[*y as usize, *x as usize]] += 1f64;
             }
         }
@@ -92,7 +92,7 @@ impl AlignmentResult for LocalAlignmentResult {
             .iter()
             .zip(self.optimal_alignment.1.iter())
         {
-            if *x != Protein::Blank && *y != Protein::Blank {
+            if (*x != Protein::Del || *x != Protein::Ins) && (*y != Protein::Del || *y != Protein::Ins) {
                 frequency_matrix[[*y as usize, *x as usize]] += 1f64;
             }
         }

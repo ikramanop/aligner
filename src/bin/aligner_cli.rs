@@ -84,9 +84,9 @@ fn main() {
         let alignment: Box<dyn AlignmentResult>;
 
         if matches.is_present("global") {
-            alignment = aligner.global_alignment(&deletions, &matrix);
+            alignment = aligner.global_alignment(deletions, deletions, &matrix);
         } else {
-            alignment = aligner.local_alignment(&deletions, &matrix);
+            alignment = aligner.local_alignment(deletions, deletions, &matrix);
         }
 
         alignment.represent();

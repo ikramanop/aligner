@@ -237,10 +237,37 @@ impl Connector {
     }
 
     pub fn get_all_hashes(&mut self) -> Result<Vec<String>> {
-        self.conn.query_map(
-            queries::GET_ALL_HASHES,
-            |hash| hash,
-        )
+        self.conn.query_map(queries::GET_ALL_HASHES, |hash| hash)
+    }
+
+    pub fn get_cmp_sequence_ids_with_null_p_value(&mut self) -> Result<Vec<(i32, String, String)>> {
+        match self
+            .conn
+            .query(queries::GET_CMP_SEQUENCE_IDS_WITH_NULL_P_VALUE)
+        {
+            Ok(result) => Ok(result),
+            Err(err) => Err(err),
+        }
+    }
+
+    pub fn get_sequence_by_identifier(&mut self, identifier: String) -> Result<String> {
+        match self
+            .conn
+            .exec_first(queries::GET_SEQUENCE_BY_IDENTIFIER, (identifier,))
+        {
+            Ok(sequence) => Ok(sequence.unwrap()),
+            Err(err) => Err(err),
+        }
+    }
+
+    pub fn add_cmp_p_value_by_id(&mut self, p_value: f64, id: i32) -> Result<()> {
+        match self
+            .conn
+            .exec_drop(queries::ADD_CMP_P_VALUE_BY_ID, (p_value, id))
+        {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err),
+        }
     }
 }
 
