@@ -2,6 +2,6 @@
 /target
 Makefile
 **/dev*.rs
-.vscode
+.idea
 database
 .VSCodeCounter

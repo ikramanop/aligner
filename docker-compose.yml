@@ -4,7 +4,7 @@ services:
   zookeeper:
     image: bitnami/zookeeper
     ports:
-      - 2181:2181
+      - "2181:2181"
     volumes:
       - zookeeper_data:/bitnami
     environment:
@@ -13,7 +13,7 @@ services:
   kafka:
     image: bitnami/kafka
     ports:
-      - 9092:9092
+      - "9092:9092"
     expose:
       - 9093
     volumes:
@@ -43,7 +43,7 @@ services:
   mariadb:
     image: lscr.io/linuxserver/mariadb:alpine
     ports:
-      - 3306:3306
+      - "3306:3306"
     environment:
       - MYSQL_DATABASE=aligner
       - MYSQL_ROOT_PASSWORD=root

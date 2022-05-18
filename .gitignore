@@ -2,8 +2,10 @@
 /out
 **/dev.rs
 **/dev_2.rs
-.vscode
+.idea
 /database
 .VSCodeCounter
-**/test**
+**/test.**
 examples
+**/**.csv
+**/**.json

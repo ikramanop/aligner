@@ -1,0 +1,24 @@
+[package]
+name = "aligner-web"
+version = "0.1.0"
+authors = ["l.marder"]
+edition = "2021"
+
+[dependencies]
+aligner-core = { version = "0.1.2", path = "../aligner-core" }
+aligner-helpers = { version = "0.1.0", path = "../aligner-helpers" }
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1.7"
+warp = "0.3"
+serde = { version = "1.0.126", features = ["derive"] }
+serde_json = "1.0.64"
+pretty_env_logger = "0.4.0"
+ndarray-rand = "0.14.0"
+ndarray-stats = "0.5.0"
+log = "0.4.14"
+scopeguard = "1.1.0"
+rdkafka = { version = "0.28.0", features = ["dynamic-linking"] }
+mysql = "21.0.2"
+uuid = { version = "0.8.2", features = ["v4", "serde"] }
+ndarray = { version = "0.15.3", features = ["serde"] }
+rand = "0.8.4"
