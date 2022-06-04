@@ -6,6 +6,7 @@ use rand::{thread_rng, Rng};
 pub(crate) mod calc;
 pub(crate) mod sequences;
 pub(crate) mod task;
+mod test;
 
 #[allow(dead_code)]
 pub(crate) enum MutationPercent {
@@ -45,7 +46,7 @@ fn mutate<T: BioData + From<usize> + Clone>(
     Ok(result)
 }
 
-pub(crate) fn filter(tasks: &[Task]) -> Result<Vec<Task>> {
+pub(crate) fn filter(mut tasks: Vec<Task>) -> Result<Vec<Task>> {
     if tasks.is_empty() {
         return Ok(vec![]);
     }
@@ -55,38 +56,46 @@ pub(crate) fn filter(tasks: &[Task]) -> Result<Vec<Task>> {
 
     let mut result = vec![];
 
-    let mut buffer = Vec::from(tasks);
+    tasks.sort_by(|a, b| a.left_coord.partial_cmp(&b.left_coord).unwrap());
 
-    while !buffer.is_empty() {
-        if buffer.len() == 1 {
-            result.push(buffer.first().unwrap().clone());
+    while !tasks.is_empty() {
+        if tasks.len() == 1 {
+            if !result.contains(tasks.first().unwrap()) {
+                result.push(tasks.first().unwrap().clone());
+            }
             break;
         }
-        let current = buffer.first().unwrap();
+
+        let current = tasks.first().unwrap();
         let mut batch = vec![current];
 
-        let mut new = vec![];
+        let mut index: usize = 0;
 
-        for task in buffer[1..].iter() {
+        for (i, task) in tasks[1..].iter().enumerate() {
+            index = i;
             if check_intersection(
                 (current.left_coord, current.right_coord),
                 (task.left_coord, task.right_coord),
             ) {
                 batch.push(task);
             } else {
-                new.push(task.clone());
+                break;
             }
         }
 
-        result.push(
-            (*batch
-                .iter()
-                .max_by(|u, v| u.z.partial_cmp(&v.z).unwrap())
-                .unwrap())
-            .clone(),
-        );
+        if batch.len() == 1 {
+            result.push((*batch.first().unwrap()).clone());
+        } else {
+            result.push(
+                (*batch
+                    .iter()
+                    .max_by(|u, v| u.z.partial_cmp(&v.z).unwrap())
+                    .unwrap())
+                .clone(),
+            );
+        }
 
-        buffer = new.clone();
+        tasks = tasks[index + 1..].to_vec();
     }
 
     Ok(result)

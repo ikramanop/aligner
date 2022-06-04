@@ -182,12 +182,16 @@ pub(crate) fn perform_calculation_per_sequence(
     for i in 0..opts.repeats {
         info!("Calculating cycle {}", i + 1);
 
+        info!("mean={} and std={} for this cycle", mean, std);
+
         let new_tasks = calculate_cycle(&query, &matrix, &indices, mean, std, opts);
 
         if new_tasks.is_empty() {
             break;
         }
-        tasks = filter(&new_tasks).unwrap();
+        tasks = filter(new_tasks).unwrap();
+
+        info!("Tasks are filtered");
 
         if i < opts.repeats - 1 {
             mean = tasks.iter().map(|value| value.alignment.f).sum::<f64>() / tasks.len() as f64;
@@ -196,8 +200,6 @@ pub(crate) fn perform_calculation_per_sequence(
                 .map(|value| (value.alignment.f - mean) * (value.alignment.f - mean))
                 .sum::<f64>()
                 / tasks.len() as f64;
-
-            info!("mean={} and std={} for this cycle", mean, std);
 
             matrix = Array2::<f64>::zeros((matrix.shape()[0], matrix.shape()[1]));
             for task in tasks.iter() {
@@ -228,7 +230,9 @@ pub(crate) fn perform_calculation_per_sequence(
         let mut tasks_inverted =
             calculate_cycle(&query, &matrix, &rotated_indices, mean, std, opts);
 
-        tasks_inverted = filter(&tasks_inverted).unwrap();
+        tasks_inverted = filter(tasks_inverted).unwrap();
+
+        info!("Inverse tasks are filtered");
 
         result.insert("inverse".to_string(), (tasks_inverted, matrix));
     }

@@ -41,8 +41,6 @@ fn main() -> Result<(), Error> {
 
     let mut wtr = CsvInput::new(output_path.as_path()).unwrap();
 
-    println!("Found repeats:");
-
     let mut matrices = HashMap::<String, Array2<f64>>::new();
 
     for (key, value) in result.iter() {

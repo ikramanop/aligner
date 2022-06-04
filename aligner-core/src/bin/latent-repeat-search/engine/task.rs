@@ -8,3 +8,9 @@ pub(crate) struct Task {
     pub(crate) right_coord: usize,
     pub(crate) z: f64,
 }
+
+impl PartialEq for Task {
+    fn eq(&self, other: &Self) -> bool {
+        self.left_coord == other.left_coord
+    }
+}

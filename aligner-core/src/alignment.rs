@@ -78,3 +78,15 @@ impl<T: BioData + Into<usize> + Eq + Copy> AlignmentTrait<T> for PWMAlignment<T>
         alignment
     }
 }
+
+impl<T: BioData + Into<usize> + Eq + Copy> PWMAlignment<T> {
+    pub fn empty() -> Self {
+        PWMAlignment {
+            numbered: vec![],
+            query: vec![],
+            dim: 0,
+            coords: ((0, 0), (0, 0)),
+            f: 0f64,
+        }
+    }
+}

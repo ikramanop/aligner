@@ -1,0 +1,17 @@
+@startuml
+
+database "Внешние данные" as data
+control "Выбор режима" as router
+participant "Режим csv" as csv
+participant "Поиск дисперстных\nповторов" as search
+
+autonumber
+router -> csv: Переход в режим csv
+data -> csv: Получение последовательности
+data -> csv: Получение списка известных дисперстных повторов
+csv -> csv: Разметка последовательности
+csv -> search: Поиск дисперстных повторов
+search --> csv: Найденные дисперстные повторы
+csv --> router: Результат поиска дополнительных семейств\nдисперстных повторов
+
+@enduml

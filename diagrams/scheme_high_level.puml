@@ -1,0 +1,25 @@
+@startuml
+
+database "Внешние данные" as data
+actor Пользователь as user
+control "Выбор режима" as router
+participant "Режим тестирования" as test
+participant "Режим исследования" as exp
+participant "Режим csv" as csv
+
+user -> router: Запрос на поиск дисперстных повторов
+router -> test: Переход в режим тестирования
+test --> router: Результат тестирования алгоритмов
+alt Указан параметр input
+    router -> exp: Переход в режим исследования
+    data -> exp: Получение внешних данных
+    exp --> router: Результат поиска дисперстных повторов
+else Указаны параметр input и параметр csv
+    router -> csv: Переход в режим csv
+    data -> csv: Получение внешних данных
+    csv --> router: Результат поиска дополнительных семейств дисперстных повторов
+end
+router --> data: Сохранение результатов работы программы
+router --> user: Результат работы программы
+
+@enduml
