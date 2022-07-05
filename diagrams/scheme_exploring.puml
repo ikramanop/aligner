@@ -1,0 +1,15 @@
+@startuml
+
+database "Внешние данные" as data
+control "Выбор режима" as router
+participant "Режим исследования" as exp
+participant "Поиск дисперстных\nповторов" as search
+
+autonumber
+router -> exp: Переход в режим исследования
+data -> exp: Получение последовательности
+exp -> search: Поиск дисперстных повторов
+search --> exp: Найденные дисперстные повторы
+exp --> router: Результат поиска дисперстных повторов
+
+@enduml

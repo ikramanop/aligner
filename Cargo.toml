@@ -1,16 +1,7 @@
-[package]
-name = "aligner"
-version = "0.1.0"
-authors = ["l.marder"]
-edition = "2018"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-clap = {version = "3.0.0-beta.2", features = ["yaml"]}
-seq_io = "0.3.1"
-ndarray = "0.15.1"
-futures = "0.3.14"
-csv = "1.1.6"
-num-traits = "0.2.14"
-ndarray-rand = "0.14.0"
+members = [
+    "aligner-core",
+    "aligner-web",
+    "aligner-helpers"
+]

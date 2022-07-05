@@ -1,0 +1,18 @@
+@startuml
+
+database "Внешние данные" as data
+actor Пользователь as user
+control "Выбор режима" as router
+participant "Режим работы утилиты" as calc
+
+autonumber
+user -> router: Запрос на поиск дисперстных повторов
+data -> router: Проверка существущих данных
+router -> router: Обработка входных параметров
+router -> calc: Переход в выбранный режим
+calc --> router: Результат работы выбранного режима
+router -> router: Обработка полученного результата
+router --> data: Сохранение результатов работы программы
+router --> user: Результат работы программы
+
+@enduml

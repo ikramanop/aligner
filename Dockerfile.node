@@ -1,0 +1,19 @@
+FROM rust:alpine as builder
+
+RUN apk add --no-cache musl-dev openssl openssl-dev
+
+WORKDIR /app
+
+COPY . /app
+
+RUN cargo build --bin node --release
+
+FROM alpine:latest as runner
+
+COPY ./config/node ./config
+COPY --from=builder /app/target/release .
+
+ENV CONFIG_PATH=./config/prod.env
+ENV RUST_LOG=info
+
+ENTRYPOINT ["./node"]

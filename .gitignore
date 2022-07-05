@@ -1,3 +1,13 @@
 /target
 /out
 **/dev.rs
+**/dev_2.rs
+.idea
+/database
+.VSCodeCounter
+**/bin/test.rs
+examples
+**/**.csv
+**/**.json
+**/**.ipynb**
+.DS_Store

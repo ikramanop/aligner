@@ -1,4 +1,7 @@
 /out
 /target
 Makefile
-**/dev.rs
+**/dev*.rs
+.idea
+database
+.VSCodeCounter
