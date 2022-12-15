@@ -10,3 +10,4 @@ examples
 **/**.csv
 **/**.json
 **/**.ipynb**
+.DS_Store

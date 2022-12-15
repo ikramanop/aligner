@@ -1,15 +1,33 @@
-# Aligner: A tool for sequence alignment
+# Aligner: Библиотека для вычисления выравниваний символьных последовательностей :test_tube: :computer: :dna:
 
-#### Developer: Lev Marder
+#### Выполнена в качестве дипломного проекта в бакалавриате кафедры 22 НИЯУ МИФИ.
 
-#### NRNU MEPhI, Spring-Summer 2021
+#### Разработчик: Лев Мардер
 
-Supplied in form of cli-application and web-service (dispatcher + nodes)
+## Состав
 
-### Building
+### Aligner-core
 
-Use `make build-cli-docker` for building docker image with aligner-cli.
+Пакет для вычисления выравниваний. Включает в себя типы данных для представления биологических символов (белков и нуклиотидов), функции для вычисления локальных и глобальных выравниваний, а также эвристические алгоритмы для поиска выравниваний без заранее заданных матриц.
 
-Use `docker run -v $(pwd):/data aligner-cli:$branch $args` to run tool after building.
+### Aligner-web
 
-Use `--help` option after build to see how to work with the tool.
+Веб-составлящая Aligner. Здесь находится api и воркеры для работы с системой для поиска подобий без заранее заданных матриц.
+
+### Aligner-utils
+
+Вспомогательные функции для работы с матрицами и файлами.
+
+## Сборка
+
+Исполняемые файлы проекта могут быть собраны с использованием cargo
+
+```bash
+cargo build --release --bin bin_name
+```
+
+Docker-образ для aligner-cli может быть собран с помощью команды `make build-cli-docker`.
+
+## Использование
+
+Для утилит можно использовать `--help` чтобы увидеть существующие параметры и их функционал.
